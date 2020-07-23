@@ -1,0 +1,11 @@
+name: IslandWars
+version: ${project.version}
+main: de.marvinleiers.islandwars.IslandWars
+api-version: 1.16
+authors: [Marvin2k0]
+website: www.marvinleiers.de
+commands:
+  iswars:
+  leave:
+  iswarsadmin:
+    permission: islandwars.admin
