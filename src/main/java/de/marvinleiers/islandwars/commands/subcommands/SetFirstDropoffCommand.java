@@ -14,13 +14,13 @@ public class SetFirstDropoffCommand extends SubCommand
     @Override
     public String getDescription()
     {
-        return null;
+        return "Set the dropoff point for team one";
     }
 
     @Override
     public String getSyntax()
     {
-        return null;
+        return "/iswarsadmin setfirstdropoff <game>";
     }
 
     @Override

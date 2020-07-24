@@ -27,7 +27,7 @@ public class CreateSign extends SubCommand
     @Override
     public String getSyntax()
     {
-        return null;
+        return "/iswarsadmin sign <game>";
     }
 
     @Override

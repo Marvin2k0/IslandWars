@@ -4,13 +4,14 @@ import de.marvinleiers.gameapi.game.Game;
 import de.marvinleiers.islandwars.IslandWars;
 import de.marvinleiers.islandwars.utils.Messages;
 import de.marvinleiers.islandwars.utils.Point;
+import net.minecraft.server.v1_8_R3.EntityBat;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftBat;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
@@ -30,13 +31,13 @@ public class CreateFirstNetherStarCommand extends SubCommand
     @Override
     public String getDescription()
     {
-        return "Sets the nether star for a team";
+        return "Sets the nether star for team one";
     }
 
     @Override
     public String getSyntax()
     {
-        return null;
+        return "/iswarsadmin setfirststar <game>";
     }
 
     @Override
@@ -54,8 +55,13 @@ public class CreateFirstNetherStarCommand extends SubCommand
         IslandWars.getPlugin().config.setLocation("games." + game.getName() + ".team-1.star." + UUID.randomUUID().toString(), location);
 
         Item netherStar = location.getWorld().dropItem(location, new ItemStack(Material.NETHER_STAR));
-        netherStar.setVelocity(new Vector(0, 0, 0));
         netherStar.setPickupDelay(Integer.MAX_VALUE);
+        ArmorStand entity = (ArmorStand) location.getWorld().spawnEntity(location.subtract(0, 1, 0), EntityType.ARMOR_STAND);
+        entity.setSmall(true);
+        entity.setVisible(false);
+        entity.setPassenger(netherStar);
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false));
+        entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, Integer.MAX_VALUE, false, false));
 
         /*
         ArmorStand armorStand = (ArmorStand) player.getWorld().spawnEntity(player.getLocation().getBlock().getLocation().clone().add(-0.17, 0, 0.10), EntityType.ARMOR_STAND);
@@ -113,32 +119,5 @@ public class CreateFirstNetherStarCommand extends SubCommand
          */
 
         player.sendMessage("§aStar for team one has been set!");
-    }
-
-    private float getAngle(Vector point1, Vector point2)
-    {
-        double dx = point2.getX() - point1.getX();
-        double dz = point2.getZ() - point1.getZ();
-        float angle = (float) Math.toDegrees(Math.atan2(dz, dx)) - 90;
-
-        if (angle < 0)
-        {
-            angle += 360.0F;
-        }
-
-        return angle;
-    }
-
-    public static ArrayList<Point> getLocations(double centerX, double centerY, double radius, double amountOfTurns)
-    {
-        ArrayList<Point> locationsList = new ArrayList<>();
-        double angleDifferences = 360.0 / amountOfTurns;
-
-        for (int i = 0; i < amountOfTurns; i++)
-        {
-            double degreeTurn = Math.toRadians(i * angleDifferences);
-            locationsList.add(new Point(centerX + (radius * Math.cos(degreeTurn)), centerY + (radius * Math.sin(degreeTurn))));
-        }
-        return locationsList;
     }
 }

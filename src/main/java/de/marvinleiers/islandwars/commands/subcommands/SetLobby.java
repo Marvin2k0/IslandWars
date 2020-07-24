@@ -21,7 +21,7 @@ public class SetLobby extends SubCommand
     @Override
     public String getSyntax()
     {
-        return null;
+        return "/iswarsadmin setlobby <game>";
     }
 
     @Override

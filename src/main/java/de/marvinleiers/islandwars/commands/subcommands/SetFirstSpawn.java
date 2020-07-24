@@ -15,13 +15,13 @@ public class SetFirstSpawn extends SubCommand
     @Override
     public String getDescription()
     {
-        return "Set the island spawn for team one.";
+        return "Set the island spawn for team one";
     }
 
     @Override
     public String getSyntax()
     {
-        return null;
+        return "/iswarsadmin setfirstspawn <game>";
     }
 
     @Override

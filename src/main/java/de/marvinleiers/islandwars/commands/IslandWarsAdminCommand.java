@@ -21,6 +21,7 @@ public class IslandWarsAdminCommand implements CommandExecutor
         subcommands.add(new CreateFirstNetherStarCommand());
         subcommands.add(new CreateSecondNetherStarCommand());
         subcommands.add(new SetFirstDropoffCommand());
+        subcommands.add(new RemoveStarCommand());
         subcommands.add(new SetSecondDropoffCommand());
     }
 
@@ -36,10 +37,11 @@ public class IslandWarsAdminCommand implements CommandExecutor
 
         if (args.length == 0)
         {
-            player.sendMessage("§c/iswarsadmin setfirstspawn <game>");
-            player.sendMessage("§c/iswarsadmin setsecondspawn <game>");
-            player.sendMessage("§c/iswarsadmin setfirststar <game>");
-            player.sendMessage("§c/iswarsadmin setsecondstar <game>");
+            for (SubCommand subCommand : subcommands)
+            {
+                player.sendMessage("§c" + subCommand.getSyntax() + " §7- " + subCommand.getDescription());
+            }
+
             return true;
         }
 

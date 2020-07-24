@@ -12,9 +12,11 @@ import de.marvinleiers.islandwars.kits.Kit;
 import de.marvinleiers.islandwars.kits.StandardKit;
 import de.marvinleiers.islandwars.utils.Messages;
 import de.marvinleiers.islandwars.utils.ResetBlock;
+import net.minecraft.server.v1_8_R3.EntityBat;
 import net.minecraft.server.v1_8_R3.IChatBaseComponent;
 import net.minecraft.server.v1_8_R3.PacketPlayOutChat;
 import org.bukkit.*;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftBat;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.*;
 import org.bukkit.event.EventHandler;
@@ -26,6 +28,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -70,6 +74,9 @@ public class GameListener implements Listener
     @EventHandler
     public void onReset(GameResetEvent event)
     {
+        if (blocks.get(event.getGame().getName()) == null)
+            return;
+
         for (ResetBlock block : blocks.get(event.getGame().getName()))
         {
             block.getLocation().getWorld().getBlockAt(block.getLocation()).setType(Material.AIR);
@@ -269,6 +276,8 @@ public class GameListener implements Listener
                                         {
                                             teams.reduceSecondStars();
 
+                                            player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
+
                                             if (teams.getSecondStarsLeft() <= 0)
                                             {
                                                 firstWin(game);
@@ -281,6 +290,8 @@ public class GameListener implements Listener
                                         else if (teams.getSecondTeam().contains(player))
                                         {
                                             teams.reduceFirstStars();
+
+                                            player.getInventory().setHelmet(new ItemStack(Material.IRON_HELMET));
 
                                             if (teams.getFirstStarsLeft() <= 0)
                                             {
@@ -296,7 +307,7 @@ public class GameListener implements Listener
                             }.runTaskTimer(IslandWars.getPlugin(), 0, 1);
                         }
 
-                        player.playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
+                        player.playSound(player.getLocation(), Sound.NOTE_PIANO, 1, 1);
                         showActionbar(player, Messages.get("message-actionbar", false).replace("%secs%", (3 - i) + ""));
 
                         i++;
@@ -407,7 +418,7 @@ public class GameListener implements Listener
 
     private void pickUp(Player player, Location star)
     {
-        for (Entity entity : star.getWorld().getNearbyEntities(star, 1, 1, 1))
+        for (Entity entity : star.getWorld().getNearbyEntities(star, 2, 2, 2))
         {
             if (entity instanceof Item)
             {
@@ -421,7 +432,6 @@ public class GameListener implements Listener
             }
         }
 
-        //TODO: check if drop off point is reached, then remove from runners.
         GamePlayer gp = IslandWars.getPlugin().getApi().gameplayers.get(player);
 
         new BukkitRunnable()
@@ -483,8 +493,14 @@ public class GameListener implements Listener
                 if (!found)
                 {
                     Item star = one.getWorld().dropItem(one, new ItemStack(Material.NETHER_STAR));
-                    star.setVelocity(new Vector(0, 0, 0));
                     star.setPickupDelay(Integer.MAX_VALUE);
+
+                    ArmorStand entity = (ArmorStand) one.getWorld().spawnEntity(one.subtract(0, 1, 0), EntityType.ARMOR_STAND);
+                    entity.setSmall(true);
+                    entity.setVisible(false);
+                    entity.setPassenger(star);
+                    entity.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false));
+                    entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, Integer.MAX_VALUE, false, false));
                 }
             }
         }
@@ -509,8 +525,14 @@ public class GameListener implements Listener
                 if (!found)
                 {
                     Item star = two.getWorld().dropItem(two, new ItemStack(Material.NETHER_STAR));
-                    star.setVelocity(new Vector(0, 0, 0));
                     star.setPickupDelay(Integer.MAX_VALUE);
+
+                    ArmorStand entity = (ArmorStand) two.getWorld().spawnEntity(two.subtract(0, 1, 0), EntityType.ARMOR_STAND);
+                    entity.setSmall(true);
+                    entity.setVisible(false);
+                    entity.setPassenger(star);
+                    entity.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false, false));
+                    entity.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, Integer.MAX_VALUE, false, false));
                 }
             }
         }
