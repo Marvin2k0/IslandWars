@@ -5,6 +5,7 @@ import de.marvinleiers.gameapi.game.Game;
 import de.marvinleiers.gameapi.utils.CustomConfig;
 import de.marvinleiers.islandwars.commands.IslandWarsAdminCommand;
 import de.marvinleiers.islandwars.commands.IslandWarsCommand;
+import de.marvinleiers.islandwars.commands.JoinCommand;
 import de.marvinleiers.islandwars.listeners.GameListener;
 import de.marvinleiers.islandwars.listeners.SignListener;
 import de.marvinleiers.islandwars.utils.Messages;
@@ -18,9 +19,6 @@ import java.util.HashMap;
 
 public final class IslandWars extends JavaPlugin
 {
-    //TODO: Teams (scoreboard) hinzufügen
-    //TODO: win- & reset-condition
-
     public HashMap<Game, Teams> teams = new HashMap<>();
     public CustomConfig config;
     public GameAPI api;
@@ -38,6 +36,7 @@ public final class IslandWars extends JavaPlugin
         getCommand("iswars").setExecutor(new IslandWarsCommand());
         getCommand("iswarsadmin").setExecutor(new IslandWarsAdminCommand());
         getCommand("leave").setExecutor(this);
+        getCommand("join").setExecutor(new JoinCommand());
 
         getServer().getPluginManager().registerEvents(new SignListener(), this);
         getServer().getPluginManager().registerEvents(new GameListener(), this);

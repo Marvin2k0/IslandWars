@@ -30,6 +30,8 @@ public class Messages
         config.addDefault("prefix", "&b&l[ISWARS]&r");
         config.addDefault("message-no-player", "&cThis command is only for players!");
         config.addDefault("message-not-in-game", "&cYou are in no game!");
+        config.addDefault("message-game-does-not-exist", "&cThis game does not exist!");
+        config.addDefault("message-already-in-game", "&cYou are already in a game. Use &7/leave &cto leave your current game.");
         config.addDefault("message-confirm-leave", "&7To &cconfirm &7please perform this command again!");
         config.addDefault("message-actionbar", "&6Wait %secs% more seconds!");
         config.addDefault("message-respawn-disabled", "&75 Minutes left. Respawns are now disabled!");
@@ -42,6 +44,9 @@ public class Messages
         config.addDefault("star-name-red", "&c&lSTAR");
         config.addDefault("min-players", 12);
         config.addDefault("max-players", 12);
+        config.addDefault("respawn-cooldown", 5);
+        config.addDefault("respawn-header", "&c%secs%");
+        config.addDefault("respawn-subtitle", "&7left to respawn.");
 
         saveConfig();
     }

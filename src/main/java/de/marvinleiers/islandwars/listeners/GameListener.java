@@ -23,6 +23,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -42,6 +43,7 @@ public class GameListener implements Listener
     private HashMap<Game, CountdownTimer> timers = new HashMap<>();
     private HashMap<String, ArrayList<ResetBlock>> blocks = new HashMap<>();
     private ArrayList<Player> runners = new ArrayList<>();
+    private HashMap<Player, Location> runnerstars = new HashMap<>();
     private HashMap<Player, Kit> kits = new HashMap<>();
 
     @EventHandler
@@ -64,10 +66,21 @@ public class GameListener implements Listener
     {
         if (IslandWars.getPlugin().getApi().inGame((Player) event.getWhoClicked()))
         {
-            if (event.getCursor().getType() == Material.NETHER_STAR)
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.NETHER_STAR)
             {
                 event.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onFoodLevelChange(FoodLevelChangeEvent event)
+    {
+        Player player = (Player) event.getEntity();
+
+        if (IslandWars.getPlugin().getApi().inGame(player))
+        {
+            event.setCancelled(true);
         }
     }
 
@@ -125,9 +138,33 @@ public class GameListener implements Listener
 
         if (runners.contains(player))
         {
+            runners.remove(player);
             String team = IslandWars.getPlugin().teams.get(game).getFirstTeam().contains(player) ? "§cRed" : "§9Blue";
 
             game.sendMessage(Messages.get("message-runner-died").replace("%team%", team));
+
+            if (runnerstars.containsKey(player))
+            {
+                Location starLocation = runnerstars.get(player);
+
+                for (Entity entity : starLocation.getWorld().getNearbyEntities(starLocation, 1, 1, 1))
+                {
+                    if (entity instanceof ArmorStand)
+                        entity.remove();
+                }
+
+                //TODO:
+
+                Item star = starLocation.getWorld().dropItem(starLocation, new ItemStack(Material.NETHER_STAR));
+                star.setPickupDelay(Integer.MAX_VALUE);
+
+                ArmorStand entity = (ArmorStand) starLocation.getWorld().spawnEntity(starLocation.subtract(0, 1, 0), EntityType.ARMOR_STAND);
+                entity.setSmall(true);
+                entity.setVisible(false);
+                entity.setPassenger(star);
+                runnerstars.remove(player);
+                runners.remove(player);
+            }
         }
 
         Location spawn = null;
@@ -141,13 +178,6 @@ public class GameListener implements Listener
         {
             spawn = IslandWars.getPlugin().config.getLocation("games." + game.getName() + ".team-2.spawn");
         }
-
-        player.setHealth(player.getMaxHealth());
-        player.teleport(spawn);
-        player.getInventory().clear();
-        player.getInventory().setArmorContents(null);
-        event.getDrops().clear();
-        event.setDroppedExp(0);
 
         if (timer.getSecondsLeft() <= 5 * 60)
         {
@@ -177,10 +207,28 @@ public class GameListener implements Listener
         }
         else
         {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(IslandWars.getPlugin(), () -> kits.get(player).receiveItems(IslandWars.getPlugin().teams.get(game).getFirstTeam().contains(player) ? (byte) 11 : (byte) 14), 5);
+            Location finalSpawn = spawn;
+
+            player.setGameMode(GameMode.SPECTATOR);
+            player.setHealth(player.getMaxHealth());
+            player.getInventory().clear();
+            player.getInventory().setArmorContents(null);
+            event.setDroppedExp(0);
+
+
+            CountdownTimer respawnTimer = new CountdownTimer(IslandWars.getPlugin(), Integer.parseInt(Messages.get("respawn-cooldown", false)),
+                    () -> {
+                    },
+                    () -> {
+                        player.teleport(finalSpawn);
+                        player.setGameMode(GameMode.SURVIVAL);
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(IslandWars.getPlugin(), () -> kits.get(player).receiveItems(IslandWars.getPlugin().teams.get(game).getFirstTeam().contains(player) ? (byte) 11 : (byte) 14), 5);
+                    },
+                    (t) -> player.sendTitle(Messages.get("respawn-header", false).replace("%secs%", t.getSecondsLeft() + ""), Messages.get("respawn-subtitle", false)));
+
+            respawnTimer.scheduleTimer();
         }
 
-        //TODO: get new kit inventory
     }
 
     @EventHandler
@@ -231,6 +279,7 @@ public class GameListener implements Listener
             if (distance <= 3)
             {
                 runners.add(player);
+                runnerstars.put(player, stars);
 
                 new BukkitRunnable()
                 {
@@ -257,6 +306,12 @@ public class GameListener implements Listener
                                 public void run()
                                 {
                                     Location dropOff = null;
+
+                                    if (!runners.contains(player))
+                                    {
+                                        this.cancel();
+                                        return;
+                                    }
 
                                     if (teams.getFirstTeam().contains(player))
                                     {

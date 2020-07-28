@@ -7,5 +7,6 @@ website: www.marvinleiers.de
 commands:
   iswars:
   leave:
+  join:
   iswarsadmin:
     permission: islandwars.admin
