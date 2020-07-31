@@ -12,13 +12,14 @@ import de.marvinleiers.islandwars.kits.Kit;
 import de.marvinleiers.islandwars.kits.StandardKit;
 import de.marvinleiers.islandwars.utils.Messages;
 import de.marvinleiers.islandwars.utils.ResetBlock;
-import net.minecraft.server.v1_8_R3.EntityBat;
-import net.minecraft.server.v1_8_R3.IChatBaseComponent;
-import net.minecraft.server.v1_8_R3.PacketPlayOutChat;
+import net.minecraft.server.v1_8_R3.*;
 import org.bukkit.*;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftBat;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -157,6 +158,7 @@ public class GameListener implements Listener
 
                 Item star = starLocation.getWorld().dropItem(starLocation, new ItemStack(Material.NETHER_STAR));
                 star.setPickupDelay(Integer.MAX_VALUE);
+                star.setTicksLived(-32768);
 
                 ArmorStand entity = (ArmorStand) starLocation.getWorld().spawnEntity(starLocation.subtract(0, 1, 0), EntityType.ARMOR_STAND);
                 entity.setSmall(true);
@@ -500,6 +502,43 @@ public class GameListener implements Listener
                     return;
                 }
 
+                Location l1 = player.getLocation().clone().add(0, 1.5, 0);
+
+                float r = 0;
+                float b = 0;
+
+                if (IslandWars.getPlugin().teams.get(gp.getGame()).getFirstTeam().contains(player))
+                {
+                    r = -255;
+                    b = 255;
+                }
+                else
+                {
+                    r = 255;
+                    b = 0;
+                }
+
+                PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.REDSTONE, true, (float) l1.getX(), (float) l1.getY(), (float) l1.getZ(), r/255, 0, b/255, (float) 1, 0);
+
+                for (Player all : Bukkit.getOnlinePlayers())
+                {
+
+                    ((CraftPlayer) all).getHandle().playerConnection.sendPacket(packet);
+                }
+            }
+        }.runTaskTimer(IslandWars.getPlugin(), 0, 1);
+
+        new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                if (!runners.contains(player))
+                {
+                    this.cancel();
+                    return;
+                }
+
                 player.getWorld().playSound(player.getLocation(), Sound.NOTE_PLING, 1, 1);
             }
         }.runTaskTimer(IslandWars.getPlugin(), 0, 20);
@@ -549,6 +588,7 @@ public class GameListener implements Listener
                 {
                     Item star = one.getWorld().dropItem(one, new ItemStack(Material.NETHER_STAR));
                     star.setPickupDelay(Integer.MAX_VALUE);
+                    star.setTicksLived(-32768);
 
                     ArmorStand entity = (ArmorStand) one.getWorld().spawnEntity(one.subtract(0, 1, 0), EntityType.ARMOR_STAND);
                     entity.setSmall(true);
@@ -581,6 +621,7 @@ public class GameListener implements Listener
                 {
                     Item star = two.getWorld().dropItem(two, new ItemStack(Material.NETHER_STAR));
                     star.setPickupDelay(Integer.MAX_VALUE);
+                    star.setTicksLived(-32768);
 
                     ArmorStand entity = (ArmorStand) two.getWorld().spawnEntity(two.subtract(0, 1, 0), EntityType.ARMOR_STAND);
                     entity.setSmall(true);

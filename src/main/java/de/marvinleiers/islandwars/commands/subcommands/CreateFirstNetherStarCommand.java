@@ -56,6 +56,7 @@ public class CreateFirstNetherStarCommand extends SubCommand
 
         Item netherStar = location.getWorld().dropItem(location, new ItemStack(Material.NETHER_STAR));
         netherStar.setPickupDelay(Integer.MAX_VALUE);
+        netherStar.setTicksLived(-32768);
         ArmorStand entity = (ArmorStand) location.getWorld().spawnEntity(location.subtract(0, 1, 0), EntityType.ARMOR_STAND);
         entity.setSmall(true);
         entity.setVisible(false);
